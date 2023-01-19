@@ -25,8 +25,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Path("fruits")
 @ApplicationScoped
-@Produces("application/json")
-@Consumes("application/json")
+@Produces({"application/xml","application/json"})
+@Consumes({"application/xml","application/json"})
 public class FruitResource {
 
     private static final Logger LOGGER = Logger.getLogger(FruitResource.class.getName());
@@ -35,19 +35,20 @@ public class FruitResource {
     EntityManager entityManager;
 
     @GET
-    public List<Fruit> get() {
-        return entityManager.createNamedQuery("Fruits.findAll", Fruit.class)
+    public Response get() {
+        List<Fruit> list= entityManager.createNamedQuery("Fruits.findAll", Fruit.class)
                 .getResultList();
+        return Response.ok(new FruitList(list)).status(201).build();
     }
 
     @GET
     @Path("{id}")
-    public Fruit getSingle(Integer id) {
+    public Response getSingle(Integer id) {
         Fruit entity = entityManager.find(Fruit.class, id);
         if (entity == null) {
             throw new WebApplicationException("Fruit with id of " + id + " does not exist.", 404);
         }
-        return entity;
+        return Response.ok(entity).status(201).build();
     }
 
     @POST
@@ -64,7 +65,7 @@ public class FruitResource {
     @PUT
     @Path("{id}")
     @Transactional
-    public Fruit update(Integer id, Fruit fruit) {
+    public Response update(Integer id, Fruit fruit) {
         if (fruit.getName() == null) {
             throw new WebApplicationException("Fruit Name was not set on request.", 422);
         }
@@ -77,7 +78,7 @@ public class FruitResource {
 
         entity.setName(fruit.getName());
 
-        return entity;
+        return Response.ok(entity).status(201).build();
     }
 
     @DELETE
@@ -91,34 +92,35 @@ public class FruitResource {
         entityManager.remove(entity);
         return Response.status(204).build();
     }
-
-    @Provider
-    public static class ErrorMapper implements ExceptionMapper<Exception> {
-
-        @Inject
-        ObjectMapper objectMapper;
-
-        @Override
-        public Response toResponse(Exception exception) {
-            LOGGER.error("Failed to handle request", exception);
-
-            int code = 500;
-            if (exception instanceof WebApplicationException) {
-                code = ((WebApplicationException) exception).getResponse().getStatus();
-            }
-
-            ObjectNode exceptionJson = objectMapper.createObjectNode();
-            exceptionJson.put("exceptionType", exception.getClass().getName());
-            exceptionJson.put("code", code);
-
-            if (exception.getMessage() != null) {
-                exceptionJson.put("error", exception.getMessage());
-            }
-
-            return Response.status(code)
-                    .entity(exceptionJson)
-                    .build();
-        }
-
-    }
+//
+//
+//    @Provider
+//    public static class ErrorMapper implements ExceptionMapper<Exception> {
+//
+//        @Inject
+//        ObjectMapper objectMapper;
+//
+//        @Override
+//        public Response toResponse(Exception exception) {
+//            LOGGER.error("Failed to handle request", exception);
+//
+//            int code = 500;
+//            if (exception instanceof WebApplicationException) {
+//                code = ((WebApplicationException) exception).getResponse().getStatus();
+//            }
+//
+//            ObjectNode exceptionJson = objectMapper.createObjectNode();
+//            exceptionJson.put("exceptionType", exception.getClass().getName());
+//            exceptionJson.put("code", code);
+//
+//            if (exception.getMessage() != null) {
+//                exceptionJson.put("error", exception.getMessage());
+//            }
+//
+//            return Response.status(code)
+//                    .entity(exceptionJson)
+//                    .build();
+//        }
+//
+//    }
 }

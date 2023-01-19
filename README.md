@@ -1,5 +1,9 @@
 # Quarkus demo: Hibernate ORM and RESTEasy
 
+ Updated [Quarkust-hibernate-orm-quickstart](https://github.com/quarkusio/quarkus-quickstarts/tree/main/hibernate-orm-quickstart) to add xml suppoort
+
+** Original README **
+
 This is a minimal CRUD service exposing a couple of endpoints over REST,
 with a front-end based on Angular so you can play with it from your browser.
 
